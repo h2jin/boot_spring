@@ -1,21 +1,44 @@
 package com.example.validation.controller;
 
+import java.util.ArrayList;
+
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.validation.dto.User;
 
 @RestController
 @RequestMapping("/api")
+@Validated // get 방식일 때 Valid 처리
 public class ApiController {
+	
+	// get 방식일 때 valid 처리하기
+	// QueryParam 방식 -> ?name=홍길동&age=50
+	@GetMapping("/user")
+	public User user(@Size(min = 2) @RequestParam String name,
+			@NotNull @Min(1) @RequestParam Integer age) {
+		
+		User user = new User();
+		user.setName(name);
+		user.setAge(age);
+		return user;
+		
+	}
+
 
 	// POST 방식 처리에 대한 Valid 확인 (반드시 Valid를 지정해주어야 한다.)
 	@PostMapping("/user")
@@ -32,6 +55,7 @@ public class ApiController {
 			// 에러가 있다면 여기서 처리
 			StringBuilder sb = new StringBuilder();
 			// 에러가 for문으로 전부 돌게 됨
+
 			bindingResult.getAllErrors().forEach(error -> {
 
 				FieldError field = (FieldError) error;
@@ -42,6 +66,7 @@ public class ApiController {
 
 				sb.append("field : " + field.getField() + "\n");
 				sb.append("message : " + message + "\n");
+				
 			});
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(sb.toString());
 		}
